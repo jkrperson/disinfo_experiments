@@ -1,6 +1,7 @@
 import torch
 import lightning as L
 from transformers import  AutoModelForSequenceClassification, AdamW, AutoModel
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, OneCycleLR
 
 from torchmetrics.classification import MulticlassConfusionMatrix
 
@@ -12,7 +13,7 @@ from loss import SupConLoss
 
 
 class NLPModel(L.LightningModule):
-    def __init__(self, model_name='xlm-roberta-base', num_labels=7, learning_rate=2e-5):
+    def __init__(self, model_name='xlm-roberta-base', num_labels=7, learning_rate=0.05):
         super().__init__()
 
         # Load the pretrained transformer model
@@ -187,4 +188,8 @@ class SupConModel(L.LightningModule):
 #         self.test_labels = []
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        scheduler_warmup = OneCycleLR(optimizer, max_lr=self.learning_rate, epochs=10, steps_per_epoch=100)
+
+
+        return [optimizer], [scheduler_warmup]

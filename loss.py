@@ -13,10 +13,24 @@ def compute_cross_entropy(p, q):
     loss = torch.sum(p * q, dim=-1)
     return - loss.mean()
 
+
 def stablize_logits(logits):
     logits_max, _ = torch.max(logits, dim=-1, keepdim=True)
     logits = logits - logits_max.detach()
     return logits
+
+@torch.no_grad()
+def concat_all_gather(tensor):
+    """
+    Performs all_gather operation on the provided tensors.
+    *** Warning ***: torch.distributed.all_gather has no gradient.
+    """
+    tensors_gather = [torch.ones_like(tensor)
+                      for _ in range(torch.distributed.get_world_size())]
+    torch.distributed.all_gather(tensors_gather, tensor, async_op=False)
+
+    output = torch.cat(tensors_gather, dim=0)
+    return output
 
 class SupConLoss(nn.Module):
     """
@@ -45,21 +59,25 @@ class SupConLoss(nn.Module):
         all_feats = feats
         all_labels = labels
 
-        
-        mask = torch.eq(labels.view(-1, 1),
-                        all_labels.contiguous().view(1, -1)).float().to(device)
-        logits_mask = torch.scatter(
-            torch.ones_like(mask),
-            1,
-            torch.arange(mask.shape[0]).view(-1, 1).to(device),
-            0
-        )
+        # compute the mask based on labels
+        if local_batch_size != self.last_local_batch_size:
+            mask = torch.eq(labels.view(-1, 1),
+                            all_labels.contiguous().view(1, -1)).float().to(device)
+            self.logits_mask = torch.scatter(
+                torch.ones_like(mask),
+                1,
+                torch.arange(mask.shape[0]).view(-1, 1).to(device),
+                0
+            )
 
-        mask = mask * logits_mask
+            self.last_local_batch_size = local_batch_size
+            self.mask = mask * self.logits_mask
+
+        mask = self.mask
 
         # compute logits
         logits = torch.matmul(feats, all_feats.T) / self.temperature
-        logits = logits - (1 - logits_mask) * 1e9
+        logits = logits - (1 - self.logits_mask) * 1e9
 
         # optional: minus the largest logit to stablize logits
         logits = stablize_logits(logits)
