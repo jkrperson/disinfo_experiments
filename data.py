@@ -45,7 +45,7 @@ import random
 
 
 class FakeNewsDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=10, num_worker=14):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
