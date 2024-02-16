@@ -15,7 +15,7 @@ def train_sup_con_model(max_epochs, log_every_n_steps, num_workers):
         verbose=True  # Print when a new checkpoint is saved
     )
 
-    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps)
+    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, num_nodes=1)
 
     fakenews_datamodule = ContrastiveFakeNewsDataModule("xlm_fakenews", num_worker=num_workers)
 
