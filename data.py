@@ -101,7 +101,7 @@ class FakeNewsDataModule(L.LightningDataModule):
     
 
 class ContrastiveFakeNewsDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=10, num_worker=14):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -131,7 +131,7 @@ class ContrastiveFakeNewsDataModule(L.LightningDataModule):
         augmented_data = self.augmentor(batch)
 
         batch = batch + augmented_data
-        tokenized = self.tokenizer([x for x,y in batch], padding=True)
+        tokenized = self.tokenizer([x for x,y in batch], padding=True, max_length=512, truncation=True)
 
         return {
             "input_ids": torch.tensor(tokenized["input_ids"]),
