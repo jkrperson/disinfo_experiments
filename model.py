@@ -193,4 +193,4 @@ class SupConModel(L.LightningModule):
 
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
 
-        return [optimizer], [scheduler]
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
