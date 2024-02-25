@@ -1,6 +1,7 @@
 import torch
 import lightning as L
 from transformers import  AutoModelForSequenceClassification, AdamW, AutoModel
+from transformers.optimization import get_linear_schedule_with_warmup
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, OneCycleLR
 
 from torchmetrics.classification import MulticlassConfusionMatrix
@@ -189,7 +190,7 @@ class SupConModel(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler_warmup = OneCycleLR(optimizer, max_lr=self.learning_rate, total_steps=self.trainer.estimated_stepping_batches)
 
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
 
-        return [optimizer], [scheduler_warmup]
+        return [optimizer], [scheduler]
