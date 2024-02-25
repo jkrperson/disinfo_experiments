@@ -3,6 +3,19 @@ import torch
 import pandas as pd
 # from textattack.augmentation import EasyDataAugmenter
 
+import lightning as L
+from torch.utils.data import random_split, DataLoader
+
+import pandas
+
+from transformers import AutoTokenizer
+
+# Note - you must have torchvision installed for this example
+from transformers import DataCollatorWithPadding
+
+from textattack.augmentation.recipes import SwapAugmenter, DeletionAugmenter
+import random  
+
 class FakeNewsDataset(Dataset):
     def __init__(self, path_to_dataset, tokenizer):
         train_df = pd.read_csv(path_to_dataset, sep="\t")
@@ -28,20 +41,43 @@ class FakeNewsDataset(Dataset):
         label = self.label2id[self.labels[idx]]
 
         return text, label
+
+
+class ContrastiveFakeNewsDataset(Dataset):
+    def __init__(self, path_to_dataset, tokenizer):
+        self.train_df = pd.read_csv(path_to_dataset, sep="\t")
+
+        self.tokenizer = tokenizer
+
+        self.id2label = {0:'true', 
+                         1:'false', 
+                         2:'partly true/misleading', 
+                         3:'mostly false' , 
+                         4:'mostly true', 
+                         5:'complicated/hard to categorise', 
+                         6:'other'}
+        
+        self.label2id = {'true':0, 'false':1 , 'partly true/misleading':2, 'mostly false':3, 'mostly true':4, 'complicated/hard to categorise':5, 'other':6}
     
+    def __len__(self):
+        return len(self.train_df)
 
-import lightning as L
-from torch.utils.data import random_split, DataLoader
+    def __getitem__(self, idx):
 
-import pandas
+        entry = self.train_df.iloc[idx]
 
-from transformers import AutoTokenizer
+        text = entry["claim"]
+        label = entry["label"]
 
-# Note - you must have torchvision installed for this example
-from transformers import DataCollatorWithPadding
+        augmentations = [entry["augmented_en"], 
+                         entry["augmented_tl"], 
+                         entry["augmented_vi"], 
+                         entry["augmented_th"], 
+                         entry["augmented_zh"]]
+        
+        augmentation = random.choice(augmentations)
 
-from textattack.augmentation.recipes import SwapAugmenter, DeletionAugmenter
-import random  
+        return [(text, self.label2id[label]), (augmentation, self.label2id[label])]
 
 
 class FakeNewsDataModule(L.LightningDataModule):
@@ -128,9 +164,7 @@ class ContrastiveFakeNewsDataModule(L.LightningDataModule):
 
     def train_collate_fn(self, batch):
 
-        augmented_data = self.augmentor(batch)
-
-        batch = batch + augmented_data
+        batch = sum(batch, [])
         tokenized = self.tokenizer([x for x,y in batch], padding=True, max_length=512, truncation=True)
 
         return {
@@ -152,7 +186,7 @@ class ContrastiveFakeNewsDataModule(L.LightningDataModule):
 
         # Assign train/val datasets for use in dataloaders
         if stage == "fit":
-            self.fakenews_train = FakeNewsDataset(self.data_dir + "/" + "train.tsv", self.tokenizer)
+            self.fakenews_train = ContrastiveFakeNewsDataset(self.data_dir + "/" + "train_augmented.tsv", self.tokenizer)
             self.fakenews_valid = FakeNewsDataset(self.data_dir + "/" + "valid.tsv", self.tokenizer)
 
         # Assign test dataset for use in dataloader(s)

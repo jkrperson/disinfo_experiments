@@ -141,3 +141,4 @@ wandb/
 runs/
 fakenews_detection/
 fakenews-detection/
+credentials.json

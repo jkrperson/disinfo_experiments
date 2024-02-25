@@ -4,6 +4,7 @@ from data import ContrastiveFakeNewsDataModule
 from lightning.pytorch.callbacks import ModelCheckpoint
 from lightning.pytorch.loggers import TensorBoardLogger
 from model import SupConModel
+from loss import SupConLoss
 
 def train_sup_con_model(max_epochs, log_every_n_steps, num_workers):
     logger = TensorBoardLogger("fakenews_detection", name="RoBERTa Normal")
@@ -15,11 +16,13 @@ def train_sup_con_model(max_epochs, log_every_n_steps, num_workers):
         verbose=True  # Print when a new checkpoint is saved
     )
 
+    loss = SupConLoss(temperature=0.5)
+
     trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=1)
 
     fakenews_datamodule = ContrastiveFakeNewsDataModule("xlm_fakenews", num_worker=num_workers)
 
-    xlm_roberta = SupConModel()
+    xlm_roberta = SupConModel(loss=loss, embedding_size=1024)
 
     trainer.fit(model=xlm_roberta, datamodule=fakenews_datamodule)
 

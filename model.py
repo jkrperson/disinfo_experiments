@@ -113,7 +113,7 @@ class NLPModel(L.LightningModule):
     
 
 class SupConModel(L.LightningModule):
-    def __init__(self, model_name='xlm-roberta-base', embedding_size=128, learning_rate=2e-5):
+    def __init__(self, model_name='xlm-roberta-base', embedding_size=128, learning_rate=2e-5, loss=SupConLoss()):
         super().__init__()
 
         # Load the pretrained transformer model
@@ -124,7 +124,7 @@ class SupConModel(L.LightningModule):
         self.projection_layer = torch.nn.Linear(self.model.config.hidden_size, embedding_size)
 
         # Set up the loss criterion (CrossEntropyLoss is used for multi-class classification)
-        self.loss = SupConLoss()
+        self.loss = loss
 
         # Set up hyperparameters
         self.learning_rate = learning_rate
