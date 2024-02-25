@@ -189,7 +189,7 @@ class SupConModel(L.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler_warmup = OneCycleLR(optimizer, max_lr=self.learning_rate, epochs=10, steps_per_epoch=1811*2)
+        scheduler_warmup = OneCycleLR(optimizer, max_lr=self.learning_rate, total_steps=self.trainer.estimated_stepping_batches)
 
 
         return [optimizer], [scheduler_warmup]
