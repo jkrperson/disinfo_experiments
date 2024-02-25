@@ -1,7 +1,7 @@
 import argparse
 import lightning as L
 from data import ContrastiveFakeNewsDataModule
-from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from lightning.pytorch.loggers import TensorBoardLogger
 from model import SupConModel
 from loss import SupConLoss
@@ -23,9 +23,11 @@ def train_sup_con_model(max_epochs, log_every_n_steps, num_workers, gpus, learni
         verbose=True  # Print when a new checkpoint is saved
     )
 
+    lr_monitor = LearningRateMonitor(logging_interval='step')
+
     loss = SupConLoss(temperature=0.5)
 
-    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus)
+    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor])
 
     fakenews_datamodule = ContrastiveFakeNewsDataModule("xlm_fakenews", num_worker=num_workers)
 
@@ -39,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument("--log_every_n_steps", type=int, default=10, help="Log every n steps")
     parser.add_argument("--num_workers", type=int, default=1, help="Number of data loader workers")
     parser.add_argument("--gpus", type=int, default=1, help="Number of GPUs")
-    parser.add_argument("--learning_rate", type=float, default=0.05, help="Learning rate")
+    parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate")
     parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility")
                         
     args = parser.parse_args()
