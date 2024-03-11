@@ -19,7 +19,7 @@ class NLPModel(L.LightningModule):
 
         # Load the pretrained transformer model
         self.model = AutoModelForSequenceClassification.from_pretrained(
-          model_name, num_labels=num_labels
+          model_name, num_labels=num_labels, hidden_dropout_prob=0.3, attention_probs_dropout_prob=0.25
         )
 
         # Set up the loss criterion (CrossEntropyLoss is used for multi-class classification)

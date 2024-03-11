@@ -13,7 +13,7 @@ import torch
 def train_sup_con_model(max_epochs, log_every_n_steps, num_workers, gpus, learning_rate, seed):
     L.seed_everything(seed)
 
-    logger = TensorBoardLogger("fakenews_detection", name="Verafiles_RoBERTa")
+    logger = TensorBoardLogger("fakenews_detection", name="Verafiles_mBERT")
 
     # log model only if `val_accuracy` increases
     checkpoint_callback = ModelCheckpoint(
@@ -26,9 +26,9 @@ def train_sup_con_model(max_epochs, log_every_n_steps, num_workers, gpus, learni
 
     trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor, checkpoint_callback])
 
-    fakenews_datamodule = VeraFilesNewsDataModule("verafiles_dataset", num_worker=num_workers)
+    fakenews_datamodule = VeraFilesNewsDataModule("verafiles_dataset", num_worker=num_workers, model="google-bert/bert-base-multilingual-cased")
 
-    xlm_roberta = NLPModel(num_labels=3, learning_rate=learning_rate)
+    xlm_roberta = NLPModel(model_name="google-bert/bert-base-multilingual-cased", num_labels=3, learning_rate=learning_rate)
 
     trainer.fit(model=xlm_roberta, datamodule=fakenews_datamodule)
 
