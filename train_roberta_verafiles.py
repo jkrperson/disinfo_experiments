@@ -10,8 +10,6 @@ import numpy as np
 import torch
 
 
-    
-
 def train_sup_con_model(max_epochs, log_every_n_steps, num_workers, gpus, learning_rate, seed):
     L.seed_everything(seed)
 
@@ -26,13 +24,18 @@ def train_sup_con_model(max_epochs, log_every_n_steps, num_workers, gpus, learni
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
 
-    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor])
+    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor, checkpoint_callback])
 
     fakenews_datamodule = VeraFilesNewsDataModule("verafiles_dataset", num_worker=num_workers)
 
     xlm_roberta = NLPModel(num_labels=3, learning_rate=learning_rate)
 
     trainer.fit(model=xlm_roberta, datamodule=fakenews_datamodule)
+
+    best_model = NLPModel.load_from_checkpoint(checkpoint_callback.best_model_path)
+
+    trainer.test(model=best_model, datamodule=fakenews_datamodule)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train SupConModel")
