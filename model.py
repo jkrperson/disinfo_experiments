@@ -104,7 +104,7 @@ class NLPModel(L.LightningModule):
         
         conf_img = PIL.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         
-#         self.logger.experiment.log({"image": [wandb.Image(conf_img)]})
+        self.logger.add_image("Confusion Matrix", conf_img, 0)
 
         self.test_preds = []
         self.test_labels = []
