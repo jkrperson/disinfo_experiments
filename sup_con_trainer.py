@@ -73,7 +73,7 @@ if __name__ == "__main__":
     elif args.dataset_name == "xlm_fakenews":
         datamodule = ContrastiveFakeNewsDataModule("datasets/xlm_fakenews", num_worker=1, model=args.model_name)
     elif args.dataset_name == "liar":
-        datamodule = LiarContrastiveDataModule("datasets/liar_dataset", num_worker=1)
+        datamodule = LiarContrastiveDataModule("datasets/liar_dataset", num_worker=1, model_name=args.model_name)
 
 
     train_sup_con_model(
