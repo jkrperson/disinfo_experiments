@@ -10,7 +10,7 @@ import torchmetrics
 
 import PIL
 
-from loss import SupConLoss
+from models.loss import SupConLoss
 
 
 class NLPModel(L.LightningModule):
@@ -157,7 +157,6 @@ class SupConModel(L.LightningModule):
         loss = self(input_ids, attention_mask, labels)
         self.log('val_loss', loss, prog_bar=True)
 
-
     def test_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
@@ -166,27 +165,6 @@ class SupConModel(L.LightningModule):
         loss = self(input_ids, attention_mask, labels)
 
         self.log('test_loss', loss, prog_bar=True)
-
-
-#     def on_test_epoch_end(self):
-
-#         preds = torch.cat(self.test_preds)
-#         labels = torch.cat(self.test_labels)
-        
-#         self.conf_matrix.update(preds, labels)
-
-#         fig, ax = self.conf_matrix.plot()
-
-#         canvas = fig.canvas
-
-#         canvas.draw()
-        
-#         conf_img = PIL.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        
-# #         self.logger.experiment.log({"image": [wandb.Image(conf_img)]})
-
-#         self.test_preds = []
-#         self.test_labels = []
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
