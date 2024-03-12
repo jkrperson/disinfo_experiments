@@ -56,30 +56,14 @@ class ContrastiveFakeNewsDataset(Dataset):
 
 
 class ContrastiveFakeNewsDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14, model="xlm-roberta-base"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_worker = num_worker
-        self.tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
 
-        self.swapper = SwapAugmenter()
-        self.deleter = DeletionAugmenter()
-
-    def augmentor(self, batch):
-        augmented_data = []
-
-        for x, y in batch:
-            augmented_text = []
-            augmented_text += self.swapper.augment(x)
-            augmented_text += self.deleter.augment(x)
-
-            random.shuffle(augmented_text)
-
-            augmented_data.append((augmented_text[0], y))
-
-        return augmented_data
 
     def train_collate_fn(self, batch):
 
