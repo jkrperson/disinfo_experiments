@@ -7,7 +7,7 @@ from data.verafiles import VeraFilesNewsDataModule
 
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from lightning.pytorch.loggers import TensorBoardLogger
-from model import SupConModel
+from models.sup_contrastive_model import SupConModel
 from models.loss import SupConLoss
 
 import random
@@ -28,7 +28,7 @@ def train_sup_con_model(
 
     # log model only if `val_accuracy` increases
     checkpoint_callback = ModelCheckpoint(
-        monitor="val_accuracy", mode="max", filename='best-checkpoint',  # Name of the checkpoint files
+        monitor="val_loss", mode="max", filename='best-checkpoint',  # Name of the checkpoint files
         save_top_k=1,  # Only keep the top 1 model
         verbose=True  # Print when a new checkpoint is saved
     )
