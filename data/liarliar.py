@@ -35,7 +35,7 @@ class LiarDatasetContrastive(Dataset):
     """
 
     def __init__(self, path_to_dataset, tokenizer):
-        self.train_df = pd.read_csv(path_to_dataset)
+        self.train_df = pd.read_csv(path_to_dataset, delimiter="\t")
 
         self.tokenizer = tokenizer
 
@@ -72,7 +72,7 @@ class LiarDatasetContrastive(Dataset):
                         entry["augmented_th"], 
                         entry["augmented_zh"]]
         
-        return text, label, random.choice(augmentations)
+        return text, self.label2id[label], random.choice(augmentations)
     
 
 class LiarDataset(Dataset):
@@ -92,7 +92,10 @@ class LiarDataset(Dataset):
     """
 
     def __init__(self, path_to_dataset, tokenizer):
-        self.train_df = pd.read_csv(path_to_dataset)
+        self.train_df = pd.read_csv(path_to_dataset, delimiter="\t", header=None)
+
+        self.train_df = self.train_df[[1, 2]]
+        self.train_df.columns = ["label", "text"]
 
         self.tokenizer = tokenizer
 
@@ -123,11 +126,11 @@ class LiarDataset(Dataset):
         text = entry["text"]
         label = entry["label"]
 
-        return text, label
+        return text, self.label2id[label]
     
     
-class LiarDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14, model_name="xlm-roberta-base"):
+class LiarContrastiveDataModule(L.LightningDataModule):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=1, model_name="xlm-roberta-base"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
@@ -135,8 +138,6 @@ class LiarDataModule(L.LightningDataModule):
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
 
-    def augmentor(self, batch):
-        pass
 
     def collate_fn(self, batch):
 
@@ -158,7 +159,7 @@ class LiarDataModule(L.LightningDataModule):
 
         # Assign train/val datasets for use in dataloaders
         if stage == "fit":
-            self.fakenews_train = LiarDatasetContrastive(self.data_dir + "/" + "train.tsv", self.tokenizer)
+            self.fakenews_train = LiarDatasetContrastive(self.data_dir + "/" + "train_augmented.tsv", self.tokenizer)
             self.fakenews_valid = LiarDataset(self.data_dir + "/" + "valid.tsv", self.tokenizer)
 
         # Assign test dataset for use in dataloader(s)

@@ -40,12 +40,12 @@ class FakeNewsDataset(Dataset):
     
 
 class FakeNewsDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=14, model="xlm-roberta-base"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_worker = num_worker
-        self.tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
+        self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
 
     def augmentor(self, batch):
