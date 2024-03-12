@@ -37,7 +37,7 @@ def train_sup_con_model(
 
     # loss = SupConLoss(temperature=0.5)
 
-    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=10, devices=1, callbacks=[lr_monitor])
+    trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=10, devices=1, callbacks=[lr_monitor, checkpoint_callback])
 
     # fakenews_datamodule = ContrastiveFakeNewsDataModule("xlm_fakenews", num_worker=num_workers)
 
