@@ -72,8 +72,10 @@ class LiarDatasetContrastive(Dataset):
                         entry["augmented_th"], 
                         entry["augmented_zh"]]
         
-        return text, self.label2id[label], random.choice(augmentations)
-    
+        augmentation = random.choice(augmentations)
+
+        return [(text, self.label2id[label]), (augmentation, self.label2id[label])]
+            
 
 class LiarDataset(Dataset):
     """
@@ -139,9 +141,10 @@ class LiarContrastiveDataModule(L.LightningDataModule):
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
 
 
-    def collate_fn(self, batch):
+    def train_collate_fn(self, batch):
 
-        tokenized = self.tokenizer([x for x,y in batch], padding=True)
+        batch = sum(batch, [])
+        tokenized = self.tokenizer([x for x,y in batch], padding=True, max_length=512, truncation=True)
 
         return {
             "input_ids": torch.tensor(tokenized["input_ids"]),
@@ -149,11 +152,14 @@ class LiarContrastiveDataModule(L.LightningDataModule):
             "labels": torch.tensor([y for x, y in batch]),
         }
     
-    def train_batch_transform(self, batch):
-        pass
+    def valid_collate_fn(self, batch):
+        tokenized = self.tokenizer([x for x,y in batch], padding=True)
 
-    def test_batch_transform(self, batch):
-        pass
+        return {
+            "input_ids": torch.tensor(tokenized["input_ids"]),
+            "attention_mask": torch.tensor(tokenized["attention_mask"]),
+            "labels": torch.tensor([y for x, y in batch]),
+        }
 
     def setup(self, stage: str):
 
@@ -171,13 +177,13 @@ class LiarContrastiveDataModule(L.LightningDataModule):
 
 
     def train_dataloader(self):
-        return DataLoader(self.fakenews_train, batch_size=self.batch_size, collate_fn=self.collate_fn, num_workers=self.num_worker, shuffle=True, multiprocessing_context='fork')
+        return DataLoader(self.fakenews_train, batch_size=self.batch_size, collate_fn=self.train_collate_fn, shuffle=True)
 
     def val_dataloader(self):
-        return DataLoader(self.fakenews_valid, batch_size=self.batch_size, collate_fn=self.collate_fn, num_workers=self.num_worker, multiprocessing_context='fork')
+        return DataLoader(self.fakenews_valid, batch_size=self.batch_size, collate_fn=self.valid_collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.collate_fn, num_workers=self.num_worker, multiprocessing_context='fork')
+        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.valid_collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.collate_fn, num_workers=self.num_worker, multiprocessing_context="fork")
+        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.valid_collate_fn)
