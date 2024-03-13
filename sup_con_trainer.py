@@ -29,8 +29,9 @@ def train_sup_con_model(
     # log model only if `val_accuracy` increases
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss", mode="min", filename='best-checkpoint',  # Name of the checkpoint files
-        save_top_k=1,  # Only keep the top 1 model
-        verbose=True  # Print when a new checkpoint is saved
+        save_top_k=2,  # Only keep the top 1 model
+        verbose=True, # Print when a new checkpoint is saved
+        save_last=True
     )
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
