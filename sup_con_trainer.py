@@ -36,20 +36,11 @@ def train_sup_con_model(
 
     lr_monitor = LearningRateMonitor(logging_interval='step')
 
-    # loss = SupConLoss(temperature=0.5)
-
     trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=10, devices=1, callbacks=[lr_monitor, checkpoint_callback])
-
-    # fakenews_datamodule = ContrastiveFakeNewsDataModule("xlm_fakenews", num_worker=num_workers)
-
-    # model = SupConModel(loss=loss, embedding_size=1024, learning_rate=learning_rate)
 
     trainer.fit(model=model, datamodule=datamodule)
 
-    # best_model = model.load_from_checkpoint(checkpoint_callback.best_model_path)
-
-    # trainer.test(model=best_model, datamodule=datamodule)
-
+    print(checkpoint_callback.best_model_path)
 
 
 if __name__ == "__main__":

@@ -35,15 +35,18 @@ class SupConModel(L.LightningModule):
         output = self.model(input_ids, attention_mask=attention_mask)
         last_hidden_state = output[0]
         pooled_output = last_hidden_state[:, 0]
-        loss = self.loss(pooled_output, labels)
-        return loss
+
+        projection = self.projection_layer(pooled_output)
+
+        return projection
 
     def training_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss = self(input_ids, attention_mask, labels)
+        projection = self(input_ids, attention_mask)
+        loss = self.loss(projection, labels)
 
         self.log('train_loss', loss, prog_bar=True)
 
@@ -54,7 +57,9 @@ class SupConModel(L.LightningModule):
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss = self(input_ids, attention_mask, labels)
+        projection = self(input_ids, attention_mask)
+        loss = self.loss(projection, labels)
+
         self.log('val_loss', loss, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
@@ -62,7 +67,8 @@ class SupConModel(L.LightningModule):
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss = self(input_ids, attention_mask, labels)
+        projection = self(input_ids, attention_mask)
+        loss = self.loss(projection, labels)
 
         self.log('test_loss', loss, prog_bar=True)
 
