@@ -24,7 +24,7 @@ class SupConModel(L.LightningModule):
           model_name
         )
 
-        self.projection_layer = torch.nn.LazyLinear(embedding_size)
+        self.projection_layer = torch.nn.Linear( self.model.config.hidden_size, embedding_size)
 
         # Set up the loss criterion (CrossEntropyLoss is used for multi-class classification)
         self.loss = loss
