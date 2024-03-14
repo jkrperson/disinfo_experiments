@@ -1,7 +1,7 @@
 import torch
 import lightning as L
 from transformers import  AutoModelForSequenceClassification, AdamW, AutoModel
-from transformers.optimization import get_linear_schedule_with_warmup
+from transformers.optimization import get_cosine_schedule_with_warmup
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts, OneCycleLR
 
 from torchmetrics.classification import MulticlassConfusionMatrix
@@ -12,10 +12,14 @@ import PIL
 
 from models.loss import SupConLoss
 
+import torch.nn.functional as F
+
 
 class SupConModel(L.LightningModule):
     def __init__(self, model_name='xlm-roberta-base', embedding_size=1024, learning_rate=2e-5, loss=SupConLoss()):
         super().__init__()
+
+        self.save_hyperparameters("model_name", "embedding_size", "learning_rate")
 
         self.model_name = model_name
 
@@ -40,7 +44,7 @@ class SupConModel(L.LightningModule):
 
         projection = self.projection_layer(pooled_output)
 
-        return projection
+        return F.normalize(projection)
 
     def training_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
@@ -77,6 +81,6 @@ class SupConModel(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
+        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
 
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
