@@ -1,9 +1,8 @@
 import argparse
 import lightning as L
 
-from data.xfact import FakeNewsDataModule
+from data.contrastive_fakenews import ContrastiveFakeNewsDataModule
 from data.verafiles import VeraFilesNewsDataModule
-from data.liarliar import LiarDataModule
 
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from lightning.pytorch.loggers import TensorBoardLogger
@@ -40,7 +39,7 @@ def create_trainer(max_epochs, log_every_n_steps, gpus, logger):
     # log model only if `val_accuracy` increases
     checkpoint_callback = ModelCheckpoint(
         monitor="val_accuracy", mode="max", filename='best-checkpoint',  # Name of the checkpoint files
-        save_top_k=2,  # Only keep the top 1 model
+        save_top_k=1,  # Only keep the top 1 model
         verbose=True  # Print when a new checkpoint is saved
     )
 
@@ -49,7 +48,7 @@ def create_trainer(max_epochs, log_every_n_steps, gpus, logger):
     return L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor, checkpoint_callback])
 
 
-def train_model(trainer, model, datamodule):
+def train_model(trainer, learning_rate, num_workers, ):
     """
     Trains the model.
 
@@ -61,22 +60,28 @@ def train_model(trainer, model, datamodule):
     Returns:
         None
     """
+    fakenews_datamodule = VeraFilesNewsDataModule("verafiles_dataset", num_worker=num_workers)
 
-    trainer.fit(model=model, datamodule=datamodule)
+    xlm_roberta = NLPModel(num_labels=3, learning_rate=learning_rate)
 
-    best_model = model.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+    trainer.fit(model=xlm_roberta, datamodule=fakenews_datamodule)
 
-    trainer.test(model=best_model, datamodule=datamodule)
+    best_model = NLPModel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path, num_labels=3)
+
+    trainer.test(model=best_model, datamodule=fakenews_datamodule)
 
     print("Best model path:", trainer.checkpoint_callback.best_model_path)
 
 
 def train_classifier_model(
-        model: L.LightningModule,
-        datamodule: L.LightningDataModule,
-        experiment_name: str,
-        max_epochs: int, 
-    ):
+        experiment_name,
+        max_epochs, 
+        log_every_n_steps, 
+        num_workers, 
+        gpus, 
+        learning_rate, 
+        seed
+        ):
     """
     Trains the supervised contrastive model.
 
@@ -91,18 +96,17 @@ def train_classifier_model(
     Returns:
         None
     """
-    L.seed_everything(42)
+    L.seed_everything(seed)
 
     logger = setup_logger(experiment_name)
 
-    trainer = create_trainer(max_epochs, 10, 1, logger)
+    trainer = create_trainer(max_epochs, log_every_n_steps, gpus, logger)
 
-    train_model(trainer, model, datamodule)
+    train_model(trainer, learning_rate, num_workers)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train Classifier Model")
-    parser.add_argument("--dataset_name", type=str, help="The name of the dataset")
     parser.add_argument("--experiment_name", type=str, help="The name of the experiment")
     parser.add_argument("--max_epochs", type=int, default=10, help="Maximum number of epochs")
     parser.add_argument("--log_every_n_steps", type=int, default=10, help="Log every n steps")
@@ -113,7 +117,7 @@ if __name__ == "__main__":
                         
     args = parser.parse_args()
 
-
+    
 
     # model = SupConModel(
     #     model_name=args.model_name, 
@@ -124,9 +128,9 @@ if __name__ == "__main__":
     if args.dataset_name == "verafiles":
         datamodule = VeraFilesNewsDataModule("datasets/verafiles_dataset", num_worker=1, model=args.model_name)
     elif args.dataset_name == "xlm_fakenews":
-        datamodule = FakeNewsDataModule("datasets/xlm_fakenews", num_worker=1, model=args.model_name)
+        datamodule = ContrastiveFakeNewsDataModule("datasets/xlm_fakenews", num_worker=1, model=args.model_name)
     elif args.dataset_name == "liar":
-        datamodule = LiarDataModule("datasets/liar_dataset", num_worker=1, model_name=args.model_name)
+        datamodule = LiarContrastiveDataModule("datasets/liar_dataset", num_worker=1, model_name=args.model_name)
 
 
 
