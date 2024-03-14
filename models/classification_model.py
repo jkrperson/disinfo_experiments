@@ -8,15 +8,39 @@ import torchmetrics
 
 import PIL
 
+from torch import nn
 
-class NLPModel(L.LightningModule):
-    def __init__(self, model_name='xlm-roberta-base', num_labels=7, learning_rate=0.05):
+class ContrastivePretrainedModel(L.LightningModule):
+    def __init__(self, model:L.LightningModule, num_labels):
         super().__init__()
 
         # Load the pretrained transformer model
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-          model_name, num_labels=num_labels, hidden_dropout_prob=0.3, attention_probs_dropout_prob=0.25
-        )
+        model.freeze()
+        
+        self.encoder = model
+        self.fc = nn.LazyLinear(num_labels)
+
+    def forward(self, input_ids, attention_mask):
+        projection = self.encoder(input_ids, attention_mask)
+        preds = self.fc(projection)
+        return preds
+    
+
+class ClassifierModel(L.LightningModule):
+    def __init__(self, model:L.LightningModule, model_name=None, num_labels=7, learning_rate=0.05):
+        super().__init__()
+
+        # Load the pretrained transformer model
+        if model_name is not None:
+            self.model = AutoModelForSequenceClassification.from_pretrained(
+                model_name, num_labels=num_labels, hidden_dropout_prob=0.3, attention_probs_dropout_prob=0.25
+            )
+        elif model is not None:
+            # Model should not have a FC layer at the end
+            self.model = ContrastivePretrainedModel(model, num_labels)
+
+        else: 
+            raise ValueError("Either model or model_name should be provided")
 
         # Set up the loss criterion (CrossEntropyLoss is used for multi-class classification)
         self.loss = torch.nn.CrossEntropyLoss()
@@ -33,17 +57,24 @@ class NLPModel(L.LightningModule):
         self.test_preds = []
         self.test_labels = []
 
-    def forward(self, input_ids, attention_mask, labels=None):
-        output = self.model(input_ids, attention_mask=attention_mask, labels=labels)
-        return output.loss, output.logits
+    def forward(self, input_ids, attention_mask):
+        if type(self.model) == AutoModelForSequenceClassification:
+            output = self.model(input_ids, attention_mask=attention_mask)
+            logits = output.logits
+        else:
+            logits = self.model(input_ids, attention_mask=attention_mask)
+        
+        return logits
 
     def training_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss, outputs = self(input_ids, attention_mask, labels)
-        preds = torch.argmax(outputs, dim=1)
+        logits = self(input_ids, attention_mask)
+
+        loss = self.loss(logits, labels)
+        preds = torch.argmax(logits, dim=1)
 
         self.train_acc(preds, labels)
         self.log('train_loss', loss, prog_bar=True)
@@ -56,8 +87,10 @@ class NLPModel(L.LightningModule):
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss, outputs = self(input_ids, attention_mask, labels)
-        preds = torch.argmax(outputs, dim=1)
+        logits = self(input_ids, attention_mask)
+
+        loss = self.loss(logits, labels)
+        preds = torch.argmax(logits, dim=1)
 
         self.valid_acc(preds, labels)
         self.log('val_loss', loss, prog_bar=True)
@@ -69,8 +102,10 @@ class NLPModel(L.LightningModule):
         attention_mask = batch['attention_mask']
         labels = batch['labels']
 
-        loss, outputs = self(input_ids, attention_mask, labels)
-        preds = torch.argmax(outputs, dim=1)
+        logits = self(input_ids, attention_mask)
+
+        loss = self.loss(logits, labels)
+        preds = torch.argmax(logits, dim=1)
 
         self.test_acc(preds, labels)
         self.test_f1(preds, labels)
