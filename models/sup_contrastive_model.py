@@ -14,8 +14,10 @@ from models.loss import SupConLoss
 
 
 class SupConModel(L.LightningModule):
-    def __init__(self, model_name='xlm-roberta-base', embedding_size=128, learning_rate=2e-5, loss=SupConLoss()):
+    def __init__(self, model_name='xlm-roberta-base', embedding_size=1024, learning_rate=2e-5, loss=SupConLoss()):
         super().__init__()
+
+        self.model_name = model_name
 
         # Load the pretrained transformer model
         self.model = AutoModel.from_pretrained(
