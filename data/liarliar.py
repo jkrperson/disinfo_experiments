@@ -187,3 +187,50 @@ class LiarContrastiveDataModule(L.LightningDataModule):
 
     def predict_dataloader(self):
         return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.valid_collate_fn)
+
+
+class LiarDataModule(L.LightningDataModule):
+    def __init__(self, data_dir: str = "./", batch_size=5, num_worker=1, model_name="xlm-roberta-base"):
+        super().__init__()
+        self.data_dir = data_dir
+        self.batch_size = batch_size
+        self.num_worker = num_worker
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
+
+
+    def collate_fn(self, batch):
+        tokenized = self.tokenizer([x for x,y in batch], padding=True)
+
+        return {
+            "input_ids": torch.tensor(tokenized["input_ids"]),
+            "attention_mask": torch.tensor(tokenized["attention_mask"]),
+            "labels": torch.tensor([y for x, y in batch]),
+        }
+
+    def setup(self, stage: str):
+
+        # Assign train/val datasets for use in dataloaders
+        if stage == "fit":
+            self.fakenews_train = LiarDataset(self.data_dir + "/" + "train.tsv", self.tokenizer)
+            self.fakenews_valid = LiarDataset(self.data_dir + "/" + "valid.tsv", self.tokenizer)
+
+        # Assign test dataset for use in dataloader(s)
+        if stage == "test":
+            self.fakenews_test = LiarDataset(self.data_dir + "/" + "test.tsv", self.tokenizer)
+
+        if stage == "predict":
+            self.fakenews_test = LiarDataset(self.data_dir + "/" + "test.tsv", self.tokenizer)
+
+
+    def train_dataloader(self):
+        return DataLoader(self.fakenews_train, batch_size=self.batch_size, collate_fn=self.collate_fn, shuffle=True)
+
+    def val_dataloader(self):
+        return DataLoader(self.fakenews_valid, batch_size=self.batch_size, collate_fn=self.collate_fn)
+
+    def test_dataloader(self):
+        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.collate_fn)
+
+    def predict_dataloader(self):
+        return DataLoader(self.fakenews_test, batch_size=self.batch_size, collate_fn=self.collate_fn)
