@@ -200,7 +200,7 @@ class LiarDataModule(L.LightningDataModule):
 
 
     def collate_fn(self, batch):
-        tokenized = self.tokenizer([x for x,y in batch], padding=True)
+        tokenized = self.tokenizer([x for x,y in batch], padding=True, max_length=512, truncation=True)
 
         return {
             "input_ids": torch.tensor(tokenized["input_ids"]),
