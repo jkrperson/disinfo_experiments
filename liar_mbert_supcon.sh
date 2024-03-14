@@ -1,1 +1,1 @@
-python sup_con_trainer.py --model_name="google-bert/bert-base-multilingual-cased" --dataset_name="liar" --experiment_name="liar_mbert_supcon" --max_epochs=100
+python sup_con_trainer.py --model_name='xlm-roberta-base' --dataset_name="liar" --experiment_name="liar_xlmRoBERTa_supcon" --max_epochs=100
