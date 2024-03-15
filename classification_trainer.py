@@ -114,7 +114,7 @@ def train_classifier_model(
 
     trainer.fit(model=model, datamodule=datamodule)
 
-    best_model = model.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+    best_model = ClassifierModel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
 
     trainer.test(model=best_model, datamodule=datamodule)
 
