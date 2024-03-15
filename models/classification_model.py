@@ -33,6 +33,8 @@ class ClassifierModel(L.LightningModule):
     def __init__(self, model:L.LightningModule=None, model_name:str=None, num_labels=7, learning_rate=0.05):
         super().__init__()
 
+        self.save_hyperparameters("model", "model_name", "num_labels", "learning_rate")
+
         # Load the pretrained transformer model
         if model_name is not None:
             self.model = AutoModelForSequenceClassification.from_pretrained(
