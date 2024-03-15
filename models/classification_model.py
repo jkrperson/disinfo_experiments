@@ -11,18 +11,20 @@ import PIL
 from torch import nn
 
 class ContrastivePretrainedModel(L.LightningModule):
-    def __init__(self, model:L.LightningModule, num_labels):
+    def __init__(self, model:L.LightningModule, num_labels, dropout_rate=0.3):
         super().__init__()
 
         # Load the pretrained transformer model
         model.freeze()
         
         self.encoder = model
+        self.dropout = nn.Dropout(dropout_rate)
         self.fc = nn.LazyLinear(num_labels)
 
     def forward(self, input_ids, attention_mask):
         projection = self.encoder(input_ids, attention_mask)
-        preds = self.fc(projection)
+        dropped = self.dropout(projection)
+        preds = self.fc(dropped)
         return preds
     
 
