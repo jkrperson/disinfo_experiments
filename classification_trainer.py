@@ -108,10 +108,6 @@ def train_classifier_model(
 
     trainer =  L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=10, devices=1, callbacks=[lr_monitor, checkpoint_callback])
 
-    trainer = create_trainer(max_epochs, 10, 1, logger)
-
-    train_model(trainer, model, datamodule)
-
     trainer.fit(model=model, datamodule=datamodule)
 
     best_model = ClassifierModel.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
