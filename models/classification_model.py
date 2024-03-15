@@ -27,7 +27,7 @@ class ContrastivePretrainedModel(L.LightningModule):
     
 
 class ClassifierModel(L.LightningModule):
-    def __init__(self, model:L.LightningModule, model_name=None, num_labels=7, learning_rate=0.05):
+    def __init__(self, model:L.LightningModule=None, model_name:str=None, num_labels=7, learning_rate=0.05):
         super().__init__()
 
         # Load the pretrained transformer model
@@ -58,12 +58,13 @@ class ClassifierModel(L.LightningModule):
         self.test_labels = []
 
     def forward(self, input_ids, attention_mask):
-        if type(self.model) == AutoModelForSequenceClassification:
+        
+        if type(self.model) == ContrastivePretrainedModel:
+            logits = self.model(input_ids, attention_mask=attention_mask)
+        else:
             output = self.model(input_ids, attention_mask=attention_mask)
             logits = output.logits
-        else:
-            logits = self.model(input_ids, attention_mask=attention_mask)
-        
+
         return logits
 
     def training_step(self, batch, batch_idx):
@@ -142,3 +143,6 @@ class ClassifierModel(L.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+
+        # disinfo_experiments/fakenews_detection/liar_mbert_supcon/version_0/checkpoints/last.ckpt
