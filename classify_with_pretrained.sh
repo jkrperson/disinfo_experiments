@@ -1,1 +1,1 @@
-python classification_trainer.py --model_path="disinfo_experiments/fakenews_detection/liar_xlmRoBERTa_supcon/version_0/checkpoints/last.ckpt" --model_name="xlm-roberta-base" --dataset_name="liar" --experiment_name="xlmRoBERTa_liar" --max_epochs=100
+python classification_trainer.py --model_path="fakenews_detection/liar_xlmRoBERTa_supcon/version_0/checkpoints/last.ckpt" --model_name="xlm-roberta-base" --dataset_name="liar" --experiment_name="xlmRoBERTa_liar" --max_epochs=100

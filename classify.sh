@@ -1,1 +1,1 @@
-python classification_trainer.py --model_name="google-bert/bert-base-multilingual-cased" --dataset_name="liar" --experiment_name="mBERT_liar" --max_epochs=100
+python classification_trainer.py --model_name="google-bert/bert-base-multilingual-cased" --dataset_name="verafiles" --experiment_name="mBERT_verafiles" --max_epochs=100
