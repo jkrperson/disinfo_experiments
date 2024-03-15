@@ -9,6 +9,7 @@ import torchmetrics
 import PIL
 
 from torch import nn
+from transformers import get_cosine_schedule_with_warmup
 
 class ContrastivePretrainedModel(L.LightningModule):
     def __init__(self, model:L.LightningModule, num_labels, dropout_rate=0.3):
@@ -144,7 +145,8 @@ class ClassifierModel(L.LightningModule):
         self.test_labels = []
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
 
+        scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
 
-        # disinfo_experiments/fakenews_detection/liar_mbert_supcon/version_0/checkpoints/last.ckpt
+        return [optimizer], [{"scheduler": scheduler, "interval": "step"}]
