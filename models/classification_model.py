@@ -11,6 +11,8 @@ import PIL
 from torch import nn
 from transformers import get_cosine_schedule_with_warmup
 
+import numpy as np
+
 class ContrastivePretrainedModel(L.LightningModule):
     def __init__(self, model:L.LightningModule, num_labels, dropout_rate=0.3):
         super().__init__()
@@ -141,7 +143,9 @@ class ClassifierModel(L.LightningModule):
         
         conf_img = PIL.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
         
-        self.logger.experiment.add_image("Confusion Matrix", conf_img, 0)
+        conf_img_np = np.array(conf_img)
+
+        self.logger.experiment.add_image("Confusion Matrix", conf_img_np, 0)
 
         self.test_preds = []
         self.test_labels = []
