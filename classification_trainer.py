@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     if args.dataset_name == "verafiles":
         datamodule = VeraFilesNewsDataModule("datasets/verafiles_dataset", num_worker=1, model=args.model_name)
-        num_labels = 4
+        num_labels = 3
     elif args.dataset_name == "xlm_fakenews":
         datamodule = FakeNewsDataModule("datasets/xlm_fakenews", num_worker=1, model=args.model_name)
         num_labels = 7
