@@ -137,15 +137,7 @@ class ClassifierModel(L.LightningModule):
 
         fig, ax = self.conf_matrix.plot()
 
-        canvas = fig.canvas
-
-        canvas.draw()
-        
-        conf_img = PIL.Image.frombytes('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-        
-        conf_img_np = np.array(conf_img)
-
-        self.logger.experiment.add_image("Confusion Matrix", conf_img_np, 0)
+        self.logger.experiment.add_figure("Confusion Matrix", fig, 0)
 
         self.test_preds = []
         self.test_labels = []
