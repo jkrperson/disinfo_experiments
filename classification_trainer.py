@@ -25,17 +25,6 @@ def train_classifier_model(
     ):
     """
     Trains the classifier model.
-
-    Args:
-        max_epochs (int): The maximum number of epochs for training.
-        log_every_n_steps (int): How often to log within steps.
-        num_workers (int): The number of workers for the data loader.
-        gpus (int): The number of GPUs to use.
-        learning_rate (float): The learning rate for the optimizer.
-        seed (int): The seed for random number generation.
-
-    Returns:
-        None
     """
     L.seed_everything(42)
 
