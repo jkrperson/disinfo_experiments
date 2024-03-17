@@ -16,62 +16,6 @@ import numpy as np
 import torch
 
 
-def setup_logger(experiment_name, logger_directory="fakenews_detection"):
-    """
-    Sets up the TensorBoard logger.
-
-    Returns:
-        TensorBoardLogger: The configured logger.
-    """
-    return TensorBoardLogger(logger_directory, name=experiment_name)
-
-
-def create_trainer(max_epochs, log_every_n_steps, gpus, logger):
-    """
-    Creates a PyTorch Lightning trainer.
-
-    Args:
-        max_epochs (int): The maximum number of epochs for training.
-        log_every_n_steps (int): How often to log within steps.
-        gpus (int): The number of GPUs to use.
-        logger (TensorBoardLogger): The logger to use.
-
-    Returns:
-        Trainer: The configured trainer.
-    """
-    # log model only if `val_accuracy` increases
-    checkpoint_callback = ModelCheckpoint(
-        monitor="val_accuracy", mode="max", filename='best-checkpoint',  # Name of the checkpoint files
-        save_top_k=2,  # Only keep the top 1 model
-        verbose=True  # Print when a new checkpoint is saved
-    )
-
-    lr_monitor = LearningRateMonitor(logging_interval='step')
-
-    return L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=log_every_n_steps, devices=gpus, callbacks=[lr_monitor, checkpoint_callback])
-
-
-def train_model(trainer, model, datamodule):
-    """
-    Trains the model.
-
-    Args:
-        trainer (Trainer): The trainer to use.
-        learning_rate (float): The learning rate for the optimizer.
-        num_workers (int): The number of workers for the data loader.
-
-    Returns:
-        None
-    """
-
-    trainer.fit(model=model, datamodule=datamodule)
-
-    best_model = model.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
-
-    trainer.test(model=best_model, datamodule=datamodule)
-
-    print("Best model path:", trainer.checkpoint_callback.best_model_path)
-
 
 def train_classifier_model(
         model: L.LightningModule,
@@ -80,7 +24,7 @@ def train_classifier_model(
         max_epochs: int, 
     ):
     """
-    Trains the supervised contrastive model.
+    Trains the classifier model.
 
     Args:
         max_epochs (int): The maximum number of epochs for training.
