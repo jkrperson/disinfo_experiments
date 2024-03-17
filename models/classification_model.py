@@ -1,6 +1,6 @@
 import torch
 import lightning as L
-from transformers import  AutoModelForSequenceClassification, AdamW
+from transformers import  AutoModelForSequenceClassification
 
 from torchmetrics.classification import MulticlassConfusionMatrix
 
@@ -143,7 +143,7 @@ class ClassifierModel(L.LightningModule):
         self.test_labels = []
 
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
 
         scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=self.trainer.estimated_stepping_batches//10, num_training_steps=self.trainer.estimated_stepping_batches)
 
