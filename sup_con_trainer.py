@@ -39,6 +39,10 @@ def train_sup_con_model(
     trainer = L.Trainer(logger=logger, max_epochs=max_epochs, log_every_n_steps=10, devices=1, callbacks=[lr_monitor, checkpoint_callback])
 
     trainer.fit(model=model, datamodule=datamodule)
+    
+    trainer.test(model=model, datamodule=datamodule)
+
+    print("Best model path:", trainer.checkpoint_callback.best_model_path)
 
     print(checkpoint_callback.best_model_path)
 

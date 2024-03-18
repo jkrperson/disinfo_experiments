@@ -36,6 +36,9 @@ class SupConModel(L.LightningModule):
         # Set up hyperparameters
         self.learning_rate = learning_rate
 
+        self.test_projections = []
+        self.test_labels = []
+
 
     def forward(self, input_ids, attention_mask, labels=None):
         output = self.model(input_ids, attention_mask=attention_mask)
@@ -44,7 +47,7 @@ class SupConModel(L.LightningModule):
 
         projection = self.projection_layer(pooled_output)
 
-        return F.normalize(projection)
+        return F.normalize(projection, dim=1)
 
     def training_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
@@ -76,7 +79,21 @@ class SupConModel(L.LightningModule):
         projection = self(input_ids, attention_mask)
         loss = self.loss(projection, labels)
 
+        self.test_projections.append(projection)
+        self.test_labels.append(labels)
+
         self.log('test_loss', loss, prog_bar=True)
+
+    def on_test_epoch_end(self):
+
+        self.test_projections = torch.cat(self.test_projections, dim=0)
+
+        self.logger.experiment.add_embedding(
+            self.test_projections,
+            metadata=self.test_labels,
+            global_step=0
+        )
+        
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
