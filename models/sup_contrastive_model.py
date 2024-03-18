@@ -80,7 +80,7 @@ class SupConModel(L.LightningModule):
         loss = self.loss(projection, labels)
 
         self.test_projections.append(projection)
-        self.test_labels.append(labels)
+        self.test_labels.extend(labels)
 
         self.log('test_loss', loss, prog_bar=True)
 
