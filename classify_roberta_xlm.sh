@@ -1,1 +1,1 @@
-python classification_trainer.py --model_name="xlm-roberta-base" --dataset_name="verafiles" --experiment_name="xlm_roBERTa_verafiles" --max_epochs=25 --learning_rate=2e-6
+python classification_trainer.py --model_name="jcblaise/roberta-tagalog-base" --dataset_name="verafiles" --experiment_name="roBERTa_tagalog_verafiles" --max_epochs=60 --learning_rate=5e-6
