@@ -54,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name", type=str, help="Name of the experiment")
     parser.add_argument("--max_epochs", type=int, default=10, help="Maximum number of epochs")
     parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate")
-    parser.add_argument("--temperature", type=float, default=0.5, help="Temperature for the loss function")
+    parser.add_argument("--temperature", type=float, default=0.1, help="Temperature for the loss function")
     parser.add_argument("--embedding_size", type=int, default=2048, help="Size of the projection layer")
                         
     args = parser.parse_args()
