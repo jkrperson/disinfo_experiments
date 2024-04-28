@@ -1,0 +1,1 @@
+python classification_trainer.py --model_name="google-bert/bert-base-multilingual-cased" --dataset_name="verafiles_balanced" --experiment_name="mBERT_verafiles_balanced" --max_epochs=30 --learning_rate=2e-5
