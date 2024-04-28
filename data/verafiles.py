@@ -46,7 +46,7 @@ class VeraFilesNewsDataModule(L.LightningDataModule):
 
     def collate_fn(self, batch):
 
-        tokenized = self.tokenizer([x for x,y in batch], padding=True, )
+        tokenized = self.tokenizer([x for x,y in batch], padding=True, truncation=True, max_length=512)
 
         return {
             "input_ids": torch.tensor(tokenized["input_ids"]),
