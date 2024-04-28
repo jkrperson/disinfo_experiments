@@ -62,9 +62,12 @@ if __name__ == "__main__":
                         
     args = parser.parse_args()
 
-    if args.dataset_name == "verafiles":
-        datamodule = VeraFilesNewsDataModule("datasets/verafiles_dataset", num_worker=1, model=args.model_name)
-        num_labels = 3
+    if args.dataset_name == "verafiles_balanced":
+        datamodule = VeraFilesNewsDataModule("datasets/disinfo_balanced", num_worker=1, model=args.model_name)
+        num_labels = 4
+    elif args.dataset_name == "verafiles_unbalanced":
+        datamodule = VeraFilesNewsDataModule("datasets/disinfo_unbalanced", num_worker=1, model=args.model_name)
+        num_labels = 4
     elif args.dataset_name == "xlm_fakenews":
         datamodule = FakeNewsDataModule("datasets/xlm_fakenews", num_worker=1, model=args.model_name)
         num_labels = 7

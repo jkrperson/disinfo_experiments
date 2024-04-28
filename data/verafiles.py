@@ -26,7 +26,7 @@ class VeraFilesDataset(Dataset):
 
         entry = self.df.iloc[idx]
 
-        text = entry["CONCAT QUOTES"]
+        text = entry["QUOTE"]
         label = entry["RATING"]
 
         return text, self.label2id[label]
