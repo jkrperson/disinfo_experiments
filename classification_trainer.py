@@ -4,6 +4,7 @@ import lightning as L
 from data.xfact import FakeNewsDataModule
 from data.verafiles import VeraFilesNewsDataModule
 from data.liarliar import LiarDataModule
+from data.fakenews_filipino import FakeTLDataModule
 
 from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
 from lightning.pytorch.loggers import TensorBoardLogger
@@ -70,6 +71,9 @@ if __name__ == "__main__":
     elif args.dataset_name == "liar":
         datamodule = LiarDataModule("datasets/liar_dataset", num_worker=1, model_name=args.model_name)
         num_labels = 6
+    elif args.dataset_name == "fakenewsTL":
+        datamodule = FakeTLDataModule("datasets/fakenewsTL_dataset", num_worker=1, model=args.model_name)
+        num_labels = 2
 
 
     if args.model_path is not None:
