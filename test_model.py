@@ -3,8 +3,8 @@ from data.verafiles import VeraFilesDataset
 from transformers import AutoTokenizer
 import torch.nn.functional as F
 
-data = VeraFilesDataset("datasets/verafiles_dataset/test.csv", None)
-model = ClassifierModel.load_from_checkpoint("checkpoint/best-checkpoint-v1.ckpt")
+data = VeraFilesDataset("datasets/disinfo_unbalanced/test.csv", None)
+model = ClassifierModel.load_from_checkpoint("fakenews_detection/mBERT_verafiles_unbalanced/version_0/checkpoints/best-checkpoint.ckpt")
 tokenizer = AutoTokenizer.from_pretrained("google-bert/bert-base-multilingual-cased")
 
 text, label = data[13]
