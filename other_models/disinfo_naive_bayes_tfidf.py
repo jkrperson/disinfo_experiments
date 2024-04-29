@@ -3,25 +3,25 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import seaborn as sns
-from sklearn.svm import SVC
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Load the training and test datasets
-train_data = pd.read_csv('datasets/verafiles_dataset/train.csv')
-test_data = pd.read_csv('datasets/verafiles_dataset/test.csv')
+train_data = pd.read_csv('datasets/disinfo_balanced/train.csv')
+test_data = pd.read_csv('datasets/disinfo_balanced/test.csv')
 
 # Extract the labels and text from the datasets
 train_labels = train_data['RATING']
-train_text = train_data['CONCAT QUOTES']
+train_text = train_data['QUOTE']
 test_labels = test_data['RATING']
-test_text = test_data['CONCAT QUOTES']
+test_text = test_data['QUOTE']
 
-# Create a CountVectorizer to convert text into numerical features
-vectorizer = CountVectorizer()
+# Create a TfidfVectorizer to convert text into numerical features
+vectorizer = TfidfVectorizer()
 train_features = vectorizer.fit_transform(train_text)
 test_features = vectorizer.transform(test_text)
 
-# Train an SVM classifier
-classifier = SVC()
+# Train a Naive Bayes classifier
+classifier = MultinomialNB()
 classifier.fit(train_features, train_labels)
 
 # Predict the labels for the test set
