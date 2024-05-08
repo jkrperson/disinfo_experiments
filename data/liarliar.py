@@ -98,8 +98,8 @@ class LiarDataset(Dataset):
 
         self.train_df = self.train_df[[1, 2]]
 
-        self.train_df["new_column"] = self.train_df.iloc[:, 1] + self.train_df.iloc[:, 3:].astype(str).apply(lambda x: ' [SEP] '.join(x), axis=1)
-        self.train_df = self.train_df[[2, "new_column"]]
+        self.train_df["new_column"] = self.train_df.iloc[:, 2:].astype(str).apply(lambda x: ' [SEP] '.join(x), axis=1)
+        self.train_df = self.train_df[[1, "new_column"]]
 
         self.train_df.columns = ["label", "text"]
 
