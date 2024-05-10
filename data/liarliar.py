@@ -192,7 +192,7 @@ class LiarContrastiveDataModule(L.LightningDataModule):
 
 
 class LiarDataModule(L.LightningDataModule):
-    def __init__(self, data_dir: str = "./", batch_size=4, num_worker=1, model_name="xlm-roberta-base"):
+    def __init__(self, data_dir: str = "./", batch_size=8, num_worker=1, model_name="xlm-roberta-base"):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
