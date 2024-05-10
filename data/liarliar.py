@@ -96,8 +96,6 @@ class LiarDataset(Dataset):
     def __init__(self, path_to_dataset, tokenizer):
         self.train_df = pd.read_csv(path_to_dataset, delimiter="\t", header=None)
 
-        self.train_df = self.train_df[[1, 2]]
-
         self.train_df["new_column"] = self.train_df.iloc[:, 2:].astype(str).apply(lambda x: ' [SEP] '.join(x), axis=1)
         self.train_df = self.train_df[[1, "new_column"]]
 
