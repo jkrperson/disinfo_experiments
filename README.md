@@ -38,7 +38,7 @@ Please ensure that you have the necessary dependencies installed and the appropr
 
 ### Dependencies
 
-This project requires Python 3.6 or later and the packages listed in `requirements.txt`. You can install them using:
+This project requires Python 3.11 or later and the packages listed in `requirements.txt`. You can install them using:
 
 ```sh
 pip install -r requirements.txt
